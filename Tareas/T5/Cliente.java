@@ -4,7 +4,8 @@ import java.io.*; //Importamos las bibliotecas para los streams(flujos)
 public class Cliente {
     public static void main(String args[]) {
         try {
-            BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader br1 = new BufferedReader(new InputStreamReader(System.in)); // Creamos un stream para la
+                                                                                       // entrada del usuario (Consola)
             System.out.printf("Escriba la dirección del servidor: ");
             String host = br1.readLine();
             System.out.printf("\n\nEscriba el puerto: ");
