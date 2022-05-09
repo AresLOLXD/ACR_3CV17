@@ -1,0 +1,5 @@
+objetos\Producto.class
+objetos\CarritoDeCompra.class
+servidor\Servidor.class
+cliente\Cliente.class
+objetos\Gestor.class

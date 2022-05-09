@@ -1,0 +1,1 @@
+Clear-Host && java -cp .\target\P1-0.1.0.jar .\src\main\java\cliente\Cliente.java
