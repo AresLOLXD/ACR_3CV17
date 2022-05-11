@@ -11,6 +11,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -56,10 +58,13 @@ public class CarritoDeCompra implements Externalizable {
         document.addPage(pagina);
         PDPageContentStream contentStream = new PDPageContentStream(document, pagina);
         contentStream.beginText();
-        contentStream.setFont(PDType1Font.COURIER, 11);
+        contentStream.setFont(PDType1Font.COURIER, 10);
         contentStream.setLeading(14.5f);
         contentStream.newLineAtOffset(25, 700);
-        contentStream.showText("Producto       Cantidad       Precio         Total");
+        SimpleDateFormat dsf = new SimpleDateFormat("EEEE dd MMM yyyy", Locale.getDefault());
+        contentStream.showText("Fecha: " + dsf.format(new Date()));
+        contentStream.newLine();
+        contentStream.showText("Producto       Cantidad       Precio       SubTotal");
         contentStream.newLine();
         for (Iterator it = productos.iterator(); it.hasNext();) {
             Producto p = (Producto) it.next();
@@ -72,8 +77,8 @@ public class CarritoDeCompra implements Externalizable {
         contentStream.showText("Total:            " + total);
         contentStream.endText();
         contentStream.close();
-        SimpleDateFormat dsf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
-        String ruta = "Ticket" + dsf.format(Date.from(Instant.now())) + ".pdf";
+        dsf = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+        String ruta = "Ticket" + dsf.format(new Date()) + ".pdf";
         document.save(ruta);
         document.close();
         if (Desktop.isDesktopSupported()) {
