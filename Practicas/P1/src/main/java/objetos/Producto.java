@@ -10,9 +10,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class Producto implements Externalizable {
+public class Producto implements Externalizable { // Usamos Externalizable para poder escribir manualmente los elementos
+                                                  // del objeto
+    private int idProducto;
+    private String nombre;
+    private int cantidad;
+    private double precio;
+    private String descripcion;
 
-    public Producto(int idProducto, String nombre, int cantidad, double precio, String descripcion) {
+    public Producto(int idProducto, String nombre,
+            int cantidad, double precio, String descripcion) { // Constructor con todos los objetos
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.cantidad = cantidad;
@@ -22,12 +29,6 @@ public class Producto implements Externalizable {
 
     public Producto() {
     }
-
-    private int idProducto;
-    private String nombre;
-    private int cantidad;
-    private double precio;
-    private String descripcion;
 
     public int getCantidad() {
         return cantidad;
@@ -61,19 +62,16 @@ public class Producto implements Externalizable {
         this.precio = precio;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Producto{\nidProducto=").append(idProducto);
-        sb.append(",\n nombre=").append(nombre);
-        sb.append(",\n cantidad=").append(cantidad);
-        sb.append(",\n precio=").append(precio);
-        sb.append(",\n descripcion=").append(descripcion);
-        sb.append('}');
-        return sb.toString();
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public ArrayList<File> obtenerImagenes() {
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public ArrayList<File> obtenerImagenes() { // Metodo para obtener las imagenes de cada producto, esta fijo a la
+                                               // cantidad de productos
         ArrayList<File> imagenes = new ArrayList<File>();
         Path path = Paths.get("./Imagenes/");
         File a1, a2, a3, a4;
@@ -95,22 +93,27 @@ public class Producto implements Externalizable {
         return imagenes;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    @Override
+    public String toString() {// Creamos el toString para usarlo despues
+        StringBuilder sb = new StringBuilder();
+        sb.append("Producto{\nidProducto=").append(idProducto);
+        sb.append(",\n nombre=").append(nombre);
+        sb.append(",\n cantidad=").append(cantidad);
+        sb.append(",\n precio=").append(precio);
+        sb.append(",\n descripcion=").append(descripcion);
+        sb.append("\n}\n");
+        return sb.toString();
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        Producto nuevo = new Producto(this.idProducto, this.nombre, this.cantidad, this.precio, this.descripcion);
+    protected Object clone() throws CloneNotSupportedException { // Metodo para clonar el objeto
+        Producto nuevo = new Producto(this.idProducto, this.nombre,
+                this.cantidad, this.precio, this.descripcion);
         return nuevo;
     }
 
     @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
+    public void writeExternal(ObjectOutput out) throws IOException { // Metodo para escribir el objeto
         out.writeInt(idProducto);
         out.writeUTF(nombre);
         out.writeUTF(descripcion);
@@ -120,7 +123,8 @@ public class Producto implements Externalizable {
     }
 
     @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    public void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException { // Metodo para leer el objeto
         this.idProducto = in.readInt();
         this.nombre = in.readUTF();
         this.descripcion = in.readUTF();

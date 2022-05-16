@@ -14,57 +14,52 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- *
- * @author aresu
- */
 public class Gestor {
 
-    private CarritoDeCompra getCarritoCompra() {
+    private CarritoDeCompra getCarritoCompra() { // Metodo para obtener el carrito del archivo
         CarritoDeCompra carr = new CarritoDeCompra();
-
         try {
             File file = new File("existencias");
             FileInputStream fis = new FileInputStream(file);
             ObjectInputStream ois = new ObjectInputStream(fis);
-            carr = (CarritoDeCompra) ois.readObject();
+            carr = (CarritoDeCompra) ois.readObject(); // Intentamos obtener el carrito del archivo
         } catch (Exception e) {
             e.printStackTrace();
         }
         return carr;
     }
 
-    private void saveCarritoCompra(CarritoDeCompra carr) {
+    private void saveCarritoCompra(CarritoDeCompra carr) {// Metodo para guardar el carrito en el archivo
         try {
             File file = new File("existencias");
-            file.setLastModified(System.currentTimeMillis());
             FileOutputStream fos = new FileOutputStream(file);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(carr);
+            oos.writeObject(carr); // Escribimos el carrito en el archivo
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void gestionaAbastecedorServidor(ObjectInputStream ois, ObjectOutputStream oos) throws IOException {
+    public void gestionaAbastecedorServidor(ObjectInputStream ois, ObjectOutputStream oos)
+            throws IOException { // Manejamos el abastecedor desde el servidor
         CarritoDeCompra carr = getCarritoCompra();
         Producto p;
         oos.writeObject(carr);
         oos.flush();
-        oos.reset();
+        oos.reset(); // Hago un reset para que no tenga cache de objetos
         boolean sePuedeSalir = false;
-        while (!sePuedeSalir) {
+        while (!sePuedeSalir) {// Ciclamos mientras no se deba salir
             int operacion = ois.readInt();
             switch (operacion) {
                 case 1: // Agrega producto
-                    p = new Producto();
+                    p = new Producto(); // Recibimos las propiedades del nuevo producto
                     p.setIdProducto(carr.getProductos().size() + 1);
                     p.setNombre(ois.readUTF());
                     p.setCantidad(ois.readInt());
                     p.setPrecio(ois.readDouble());
                     p.setDescripcion(ois.readUTF());
-                    carr.addProduct(p);
-                    carr.setTotal(0.0);
+                    carr.addProduct(p); // Lo agregamos
+                    carr.setTotal(0.0); // Cambiamos el total a 0
                     break;
                 case 2:// Actualiza producto
                     p = new Producto();
@@ -73,12 +68,12 @@ public class Gestor {
                     p.setCantidad(ois.readInt());
                     p.setPrecio(ois.readDouble());
                     p.setDescripcion(ois.readUTF());
-                    carr.removeProduct(p.getIdProducto(), true);
-                    carr.addProduct(p);
-                    carr.setTotal(0.0);
+                    carr.removeProduct(p.getIdProducto(), true); // Lo borramos y reindexamos
+                    carr.addProduct(p); // Agregamos producto
+                    carr.setTotal(0.0); // Cambiamos el total a 0
                     break;
                 case 3:// Quita producto
-                    carr.removeProduct(ois.readInt(), true);
+                    carr.removeProduct(ois.readInt(), true); // Lo quitamos de la lista
                     carr.setTotal(0.0);
                     break;
                 case 4:// Salir
@@ -88,21 +83,20 @@ public class Gestor {
             saveCarritoCompra(carr);
 
             oos.writeObject(carr);
-            oos.flush();
-            oos.reset();
+            oos.flush();// Enviamos el carrito actualizado
+            oos.reset();// Hago un reset para que no tenga cache de objetos
         }
 
     }
 
     public void gestionaClienteServidor(ObjectInputStream ois, ObjectOutputStream oos)
             throws IOException, ClassNotFoundException, CloneNotSupportedException {
-
         CarritoDeCompra carr = getCarritoCompra();
         Producto p;
         int idProducto;
         oos.writeObject(carr);
         oos.flush();
-        oos.reset();
+        oos.reset();// Hago un reset para que no tenga cache de objetos
         boolean sePuedeSalir = false;
         while (!sePuedeSalir) {
             int operacion = ois.readInt();
@@ -112,24 +106,24 @@ public class Gestor {
                     p = carr.getProducto(idProducto);
                     oos.writeObject(p);
                     oos.flush();
-                    oos.reset();
+                    oos.reset();// Hago un reset para que no tenga cache de objetos
                     ArrayList<File> archivos = p.obtenerImagenes();
                     oos.writeInt(archivos.size());
                     oos.flush();
-                    oos.reset();
+                    oos.reset();// Hago un reset para que no tenga cache de objetos
                     byte[] b = new byte[1024];
                     for (File file : archivos) {
                         int n;
                         long enviados = 0, tam = file.length();
                         oos.writeLong(tam);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         try (DataInputStream dis = new DataInputStream(new FileInputStream(file))) {
                             while (enviados < tam) {
                                 n = dis.read(b);
                                 oos.write(b, 0, n);
                                 oos.flush();
-                                oos.reset();
+                                oos.reset();// Hago un reset para que no tenga cache de objetos
                                 enviados += (long) n;
                             }
                         }
@@ -140,11 +134,11 @@ public class Gestor {
                     if (carr.getProducto(p.getIdProducto()).getCantidad() >= p.getCantidad()) {
                         oos.writeBoolean(true);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                     } else {
                         oos.writeBoolean(false);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                     }
                     break;
                 case 3:// Comprar nuevo carrito
@@ -156,7 +150,7 @@ public class Gestor {
                         if (carr.getProducto(p.getIdProducto()).getCantidad() < p.getCantidad()) {
                             oos.writeBoolean(false);
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             siCompro = false;
                             break;
                         } else {
@@ -171,32 +165,33 @@ public class Gestor {
 
                         oos.writeBoolean(true);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                     } else {
                         oos.writeBoolean(false);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                     }
                     break;
                 case 4:// Devuelve productos
                     oos.writeObject(carr);
                     oos.flush();
-                    oos.reset();
+                    oos.reset();// Hago un reset para que no tenga cache de objetos
                     break;
                 case 5:
                     sePuedeSalir = true;
                     break;
             }
-            oos.reset();
+            oos.reset();// Hago un reset para que no tenga cache de objetos
         }
 
         saveCarritoCompra(carr);
     }
 
     public void gestionaClienteCliente(ObjectInputStream ois, ObjectOutputStream oos, BufferedReader br)
-            throws IOException, ClassNotFoundException, CloneNotSupportedException {
+            throws IOException, ClassNotFoundException, CloneNotSupportedException { // Metodo para gestionar el cliente
+                                                                                     // desde el cliente
         if (ois.readBoolean()) {
-            CarritoDeCompra existencias = (CarritoDeCompra) ois.readObject();
+            CarritoDeCompra existencias = (CarritoDeCompra) ois.readObject(); // Obtenemos el carrito actual
             CarritoDeCompra carr = new CarritoDeCompra();
             boolean sePuedeSalir = false;
             Producto p, copiaProducto;
@@ -214,7 +209,6 @@ public class Gestor {
                         "");
 
                 int opcion = Integer.parseInt(br.readLine());
-
                 switch (opcion) {
                     case 1: // Revisar carrito
                         System.out.println(carr);
@@ -222,84 +216,84 @@ public class Gestor {
                     case 2:// Listar producots en tienda
                         oos.writeInt(4);
                         oos.flush();
-                        oos.reset();
-                        existencias = (CarritoDeCompra) ois.readObject();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
+                        existencias = (CarritoDeCompra) ois.readObject(); // Revisamos las existencias de productos
                         for (Iterator<Producto> iterator = existencias.getProductos().iterator(); iterator.hasNext();) {
                             p = iterator.next();
                             System.out.println("ID: " + p.getIdProducto() + "\tNombre: " + p.getNombre()
                                     + "\tExistencias: " + p.getCantidad());
-
                         }
                         break;
                     case 3:// Mostrar detalles del producto
                         oos.writeInt(1);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         System.out.print("Ingresa el ID del producto: ");
 
                         IdProducto = Integer.parseInt(br.readLine());
-                        oos.writeInt(IdProducto);
+                        oos.writeInt(IdProducto); // Enviamos el ID del producto
                         oos.flush();
-                        oos.reset();
-                        p = (Producto) ois.readObject();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
+                        p = (Producto) ois.readObject(); // Obtenemos el producto
                         System.out.println(p);
-                        int cantidad = ois.readInt();
-                        byte[] b = new byte[1024];
+
+                        int cantidad = ois.readInt();// Cantidad de imagenes del producto
+                        byte[] b = new byte[1024]; // Buffer para escribir la imagen
                         for (int i = 0; i < cantidad; i++) {
                             int n;
-                            long recibidos = 0, tam = ois.readLong();
-                            File archivo = new File("Producto_" + (i + 1) + ".png");
+                            long recibidos = 0, tam = ois.readLong();// Leemos el tamaño del archivo
+                            File archivo = new File("Producto_" + (i + 1) + ".png"); // Creamos un archivo
                             try (DataOutputStream dos = new DataOutputStream(
                                     new FileOutputStream(archivo))) {
-                                while (recibidos < tam) {
+                                while (recibidos < tam) { // Escribimos la imagen mientras tengamos que recibir
                                     n = ois.read(b);
                                     dos.write(b, 0, n);
                                     recibidos += n;
                                 }
                             }
-                            muestraImagen(archivo);
+                            muestraImagen(archivo); // Mostramos la imagen
                         }
                         break;
                     case 4:// Comprar producto
                         System.out.print("Ingresa el ID del producto: ");
 
                         IdProducto = Integer.parseInt(br.readLine());
-                        p = carr.getProducto(IdProducto);
-                        if (p == null) {
-                            p = (Producto) existencias.getProducto(IdProducto).clone();
-                            if (!(p == null)) {
-                                p.setCantidad(0);
+                        p = carr.getProducto(IdProducto); // Obtenemos el producto para revisar si ya esta en el carrito
+                        if (p == null) { // Si no existe entonces hay que tomarlo de las existencias
+                            p = existencias.getProducto(IdProducto); // Lo buscamos en las existencias
+                            if (!(p == null)) { // Si lo encontro entonces lo clonamos
+                                p = (Producto) p.clone();// Lo clonamos
+                                p.setCantidad(0); // Ponemos la cantidad de 0 para que lo cambiemos despues
                             }
                         }
-                        if (!(p == null)) {
-                            copiaProducto = (Producto) p.clone();
+                        if (!(p == null)) { // Si el producto es diferente de null
+                            copiaProducto = (Producto) p.clone(); // Lo clonamos
                             System.out.print("Ingresa la cantidad del producto: ");
-
-                            copiaProducto.setCantidad(Integer.parseInt(br.readLine()));
-                            oos.writeInt(2);
+                            copiaProducto.setCantidad(Integer.parseInt(br.readLine())); // Ponemos la cantidad desde el
+                                                                                        // teclado
+                            oos.writeInt(2); // Le decimos que queremos comprar un objeto
                             oos.flush();
-                            oos.reset();
-                            copiaProducto.setCantidad(p.getCantidad() + copiaProducto.getCantidad());
-                            oos.writeObject(copiaProducto);
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
+                            copiaProducto.setCantidad(p.getCantidad() + copiaProducto.getCantidad()); // Lo agregamos a
+                                                                                                      // la copia
+                            oos.writeObject(copiaProducto); // Lo enviamos
                             oos.flush();
-                            oos.reset();
-                            if (ois.readBoolean()) {
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
+                            if (ois.readBoolean()) { // Significa que si hay existencias suficientes
                                 copiaProducto.setCantidad(copiaProducto.getCantidad() - p.getCantidad());
-                                carr.addProduct(copiaProducto);
+                                carr.addProduct(copiaProducto); // Lo agregamos al carrito
                                 System.out.println("Articulo agregado al carrito");
 
-                            } else {
+                            } else { // No hay existencias
                                 System.out.println("No hay suficientes existencias");
-
                             }
                         } else {
                             System.out.println("El producto no existe");
-
                         }
                         break;
                     case 5:// Modificar carrito
                         boolean sePuedeSalir2 = false;
-                        while (!sePuedeSalir2) {
+                        while (!sePuedeSalir2) { // Entramos en el ciclo para modificar el carrito
                             System.out.println("" +
                                     "Ingresa la operacion que quieras realizar:\n" +
                                     "1)Mostrar carrito\n" +
@@ -318,45 +312,40 @@ public class Gestor {
                                     System.out.print("Ingresa el ID del producto: ");
 
                                     IdProducto = Integer.parseInt(br.readLine());
-                                    p = carr.getProducto(IdProducto);
+                                    p = carr.getProducto(IdProducto); // Buscamos el producto que queremos modificar
 
-                                    if (!(p == null)) {
+                                    if (!(p == null)) { // Si el objeto es diferente de nulo
                                         p = (Producto) p.clone();
                                         System.out.print("Ingresa la cantidad del producto: ");
 
                                         p.setCantidad(Integer.parseInt(br.readLine()));
                                         oos.writeInt(2);
                                         oos.flush();
-                                        oos.reset();
+                                        oos.reset();// Hago un reset para que no tenga cache de objetos
                                         oos.writeObject(p);
                                         oos.flush();
-                                        oos.reset();
-                                        if (ois.readBoolean()) {
-                                            carr.removeProduct(p.getIdProducto(), false);
-                                            carr.addProduct(p);
+                                        oos.reset();// Hago un reset para que no tenga cache de objetos
+                                        if (ois.readBoolean()) { // Si hay existencias
+                                            carr.removeProduct(p.getIdProducto(), false); // Lo borramos
+                                            carr.addProduct(p);// Y lo agregamos
                                             System.out.println("Carrito modificado correctamente");
-
                                         } else {
                                             System.out.println("No hay suficientes existencias");
-
                                         }
                                     } else {
                                         System.out.println("El producto no esta en el carrito");
-
                                     }
                                     break;
                                 case 3:// Elimar producto
                                     System.out.print("Ingresa el ID del producto: ");
 
                                     IdProducto = Integer.parseInt(br.readLine());
-                                    p = carr.getProducto(IdProducto);
+                                    p = carr.getProducto(IdProducto); // Lo buscamos en el carrito
                                     if (!(p == null)) {
-                                        carr.removeProduct(IdProducto, false);
+                                        carr.removeProduct(IdProducto, false); // Lo quitamos
                                         System.out.println("Producto eliminado del carrito");
-
                                     } else {
                                         System.out.println("El producto no esta en el carrito");
-
                                     }
                                     break;
                                 case 4: // Salir
@@ -364,23 +353,20 @@ public class Gestor {
                                     break;
                                 default:
                                     System.out.println("Opcion invalida");
-
                                     break;
-
                             }
                         }
                         break;
-                    case 6:
-                        // Finalizar compra
+                    case 6: // Finalizar compra
                         oos.writeInt(3);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         oos.writeObject(carr);
                         oos.flush();
-                        oos.reset();
-                        if (ois.readBoolean()) {
-                            carr.generateTicket();
-                            carr = new CarritoDeCompra();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
+                        if (ois.readBoolean()) { // Si paso la compra
+                            carr.generateTicket(); // Generamos el ticket
+                            carr = new CarritoDeCompra(); // Creamos un nuevo carrito de compra
                             System.out.println("Compra existosa");
                         } else {
                             System.out.println("Hubo un error con la compra");
@@ -391,14 +377,13 @@ public class Gestor {
                         sePuedeSalir = true;
                         oos.writeInt(5);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         break;
                     default:
                         System.out.println("Opcion invalida");
-
                         break;
                 }
-                oos.reset();
+                oos.reset();// Hago un reset para que no tenga cache de objetos
 
             }
         } else {
@@ -406,23 +391,17 @@ public class Gestor {
         }
     }
 
-    private void muestraImagen(File archivo) throws IOException {
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().open(archivo);
-        }
-    }
-
     public void gestionaAbastecedorCliente(ObjectInputStream ois, ObjectOutputStream oos, BufferedReader br)
-            throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException { // Metodo para gestionar el abastecedor desde el cliente
         System.out.print("Ingresa la contraseña: ");
         String pass = br.readLine().trim();
-        oos.writeUTF(pass);
+        oos.writeUTF(pass); // Enviamos la contraseña
         oos.flush();
-        oos.reset();
-        if (ois.readBoolean()) {
+        oos.reset();// Hago un reset para que no tenga cache de objetos
+        if (ois.readBoolean()) { // Si lo autorizamos
             boolean sePuedeSalir = false;
             Producto p;
-            CarritoDeCompra carr = (CarritoDeCompra) ois.readObject();
+            CarritoDeCompra carr = (CarritoDeCompra) ois.readObject(); // Obtenemos las existencias
             boolean deboLeer = false;
             while (!sePuedeSalir) {
                 System.out.println("Ingresa la operacion que quieres realizar:\n" +
@@ -433,12 +412,11 @@ public class Gestor {
                         "5)Salir\n" +
                         "");
                 int operacion = Integer.parseInt(br.readLine().trim());
-
                 switch (operacion) {
-                    case 1:
+                    case 1: // Registrar producto
                         oos.writeInt(1);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         p = new Producto();
                         System.out.print("Ingresa el nombre del producto: ");
                         p.setNombre(br.readLine().trim().replaceAll("\u001B\\[[\\d;]*[^\\d;]", ""));
@@ -450,26 +428,27 @@ public class Gestor {
                         p.setPrecio(Double.parseDouble(br.readLine().trim()));
                         oos.writeUTF(p.getNombre());
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         oos.writeInt(p.getCantidad());
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         oos.writeDouble(p.getPrecio());
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         oos.writeUTF(p.getDescripcion());
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         System.out.println("Producto registrado");
                         deboLeer = true;
                         break;
-                    case 2:
+                    case 2: // Modificar producto
                         System.out.print("Ingresa el ID del producto: ");
-                        p = carr.getProducto(Integer.parseInt(br.readLine().trim()));
-                        if (!(p == null)) {
+                        p = carr.getProducto(Integer.parseInt(br.readLine().trim())); // Buscamos el producto en las
+                                                                                      // existencias
+                        if (!(p == null)) { // Si el producto es diferente de nulo
                             oos.writeInt(2);
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             System.out.print("Ingresa el nombre del producto: ");
                             p.setNombre(br.readLine().trim().replaceAll("\u001B\\[[\\d;]*[^\\d;]", ""));
                             System.out.print("Ingresa la descripcion del producto: ");
@@ -480,51 +459,51 @@ public class Gestor {
                             p.setPrecio(Double.parseDouble(br.readLine().trim()));
                             oos.writeInt(p.getIdProducto());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             oos.writeUTF(p.getNombre());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             oos.writeInt(p.getCantidad());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             oos.writeDouble(p.getPrecio());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             oos.writeUTF(p.getDescripcion());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             System.out.println("Producto actualizado");
                         } else {
                             System.out.println("ID invalido");
                         }
                         deboLeer = true;
                         break;
-                    case 3:
+                    case 3: // Borar producto
                         System.out.println("Ingresa el ID del producto");
-                        p = carr.getProducto(Integer.parseInt(br.readLine().trim()));
-                        if (!(p == null)) {
+                        p = carr.getProducto(Integer.parseInt(br.readLine().trim()));// Buscamos el producto
+                        if (!(p == null)) { // Si el producto es diferente de nulo
                             oos.writeInt(3);
                             oos.writeInt(p.getIdProducto());
                             oos.flush();
-                            oos.reset();
+                            oos.reset();// Hago un reset para que no tenga cache de objetos
                             System.out.println("Producto eliminado");
                         } else {
                             System.out.println("ID invalido");
                         }
                         deboLeer = true;
                         break;
-                    case 4:
+                    case 4: // Mostramos las existencias
                         System.out.println(carr);
                         deboLeer = false;
                         break;
-                    case 5:
+                    case 5: // Salir del ciclo
                         sePuedeSalir = true;
                         oos.writeInt(4);
                         oos.flush();
-                        oos.reset();
+                        oos.reset();// Hago un reset para que no tenga cache de objetos
                         deboLeer = true;
                         break;
-                    default:
+                    default:// Opcion invalida
                         deboLeer = false;
                         System.out.println("Opcion invalida");
                         break;
@@ -532,7 +511,7 @@ public class Gestor {
                 if (deboLeer) {
                     carr = (CarritoDeCompra) ois.readObject();
                 }
-                oos.reset();
+                oos.reset();// Hago un reset para que no tenga cache de objetos
 
             }
         } else {
@@ -540,4 +519,9 @@ public class Gestor {
         }
     }
 
+    private void muestraImagen(File archivo) throws IOException { // Metodo para mostrar el archivo
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(archivo); // Trata de abrir el archivo
+        }
+    }
 }
