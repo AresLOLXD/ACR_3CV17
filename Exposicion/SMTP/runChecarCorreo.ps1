@@ -1,0 +1,1 @@
+Clear-Host && java -cp .\target\SMTP-1.0.jar .\src\main\java\correo\ChecarCorreo.java
