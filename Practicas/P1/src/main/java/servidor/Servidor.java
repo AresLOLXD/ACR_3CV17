@@ -12,10 +12,11 @@ public class Servidor {
 
     public static void main(String[] args) {
         while (true) {
-            try {
+            try (ServerSocket s = new ServerSocket(3070)) { // Generamos un Servidor en el puerto 3070
+                TimeUnit.SECONDS.sleep(5);// Sleep de 5 segundos
                 System.out.println("Esperando conexion en el puerto 3070");
                 Gestor ges = new Gestor();// Creamos el objeto gestor de usuarios
-                ServerSocket s = new ServerSocket(3070); // Generamos un Servidor en el puerto 3070
+
                 Socket cl = s.accept(); // Esperamos conexion
                 System.out.println("Conexion aceptada");
                 System.out.println("Conexión establecida desde"
@@ -54,8 +55,7 @@ public class Servidor {
                 ois.close();
                 oos.close();
                 cl.close();
-                s.close();
-                TimeUnit.SECONDS.sleep(5);// Sleep de 5 segundos
+
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Pues se murio");

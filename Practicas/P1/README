@@ -1,0 +1,10 @@
+#Es necesario tener maven instalado y en las variables de entorno
+#Este proyecto no ocupa NetBeans, se hizo completamente en VS Code
+#Si quieren compilar el proyecto solo es necesario ejecutar
+    mvn clean package
+#Si quieren correr el servidor
+    java -cp ./target/P1-0.1.0.jar ./src/main/java/servidor/Servidor.java
+#Si quieren correr el cliente
+    java -cp ./target/P1-0.1.0.jar ./src/main/java/cliente/Cliente.java
+#El archivo "existencias" contiene los productos serializados, no lo borren
+#Si se registrar un producto mas, es recomendable agregar su imagen en la carpeta de "Imagenes"

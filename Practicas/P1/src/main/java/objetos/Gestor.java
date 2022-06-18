@@ -81,10 +81,11 @@ public class Gestor {
                     break;
             }
             saveCarritoCompra(carr);
-
-            oos.writeObject(carr);
-            oos.flush();// Enviamos el carrito actualizado
-            oos.reset();// Hago un reset para que no tenga cache de objetos
+            if (!sePuedeSalir) {
+                oos.writeObject(carr);
+                oos.flush();// Enviamos el carrito actualizado
+                oos.reset();// Hago un reset para que no tenga cache de objetos
+            }
         }
 
     }
@@ -501,7 +502,7 @@ public class Gestor {
                         oos.writeInt(4);
                         oos.flush();
                         oos.reset();// Hago un reset para que no tenga cache de objetos
-                        deboLeer = true;
+                        deboLeer = false;
                         break;
                     default:// Opcion invalida
                         deboLeer = false;
